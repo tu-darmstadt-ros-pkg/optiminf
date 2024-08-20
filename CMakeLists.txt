@@ -1,18 +1,20 @@
-cmake_minimum_required(VERSION 3.1)
+cmake_minimum_required(VERSION 3.3)
+
 project(optiminf)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -pthread")
 #set(CMAKE_BUILD_TYPE Debug)
 
-## Find catkin macros and libraries
-
-find_package(catkin REQUIRED COMPONENTS paraminf autojac)
+## Find ament macros and libraries
+find_package(ament_cmake REQUIRED)
+find_package(paraminf REQUIRED)
+find_package(autojac REQUIRED)
 find_package(Eigen3 REQUIRED)
-find_package(PkgConfig)
+find_package(PkgConfig REQUIRED)
 
 #Find Ipopt with the help of PkgConfig
-pkg_search_module(IPOPT ipopt)
+pkg_search_module(IPOPT ipopt REQUIRED)
 
 # add cmake functions
 list (APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake)
@@ -20,6 +22,8 @@ include (add_doxygen_compile)
 include (add_gtest_compile)
 
 # add compile options
+option(BUILD_SHARED_LIBS "Build shared libraries" ON)
+
 option(BUILD_TEST "Build tests" OFF)
 option(BUILD_DOC "Build documentation" OFF)
 option(BUILD_ALL "Build all" OFF)
@@ -29,23 +33,12 @@ if(BUILD_ALL)
   set(BUILD_DOC ON)
 endif()
 
-###################################
-## catkin specific configuration ##
-###################################
-catkin_package(
-  INCLUDE_DIRS include ${IPOPT_INCLUDE_DIRS}
-  LIBRARIES ${PROJECT_NAME}
-  CATKIN_DEPENDS paraminf autojac
-  DEPENDS EIGEN3
-)
 
 ###########
 ## Build ##
 ###########
-include_directories(include ${catkin_INCLUDE_DIRS} ${IPOPT_INCLUDE_DIRS})
-link_directories(${IPOPT_LIBRARY_DIRS})
 
-## Specify additional locations of header files
+## Specify source and header files
 set(HEADERS
   include/${PROJECT_NAME}/data_structs/manager_container.h
   include/${PROJECT_NAME}/data_structs/nlp_data.h
@@ -113,31 +106,21 @@ set(SOURCES
     src/file_system_util.cpp
 )
 
-
 ## Declare a cpp library
 add_library(${PROJECT_NAME} ${SOURCES} ${HEADERS})
 set_target_properties(${PROJECT_NAME} PROPERTIES LINKER_LANGUAGE CXX)
-add_dependencies(${PROJECT_NAME} ${catkin_EXPORTED_TARGETS})
-target_link_libraries(${PROJECT_NAME} ${catkin_LIBRARIES} ${IPOPT_LIBRARIES} ${CMAKE_DL_LIBS})
+target_link_libraries(${PROJECT_NAME} PUBLIC ${autojac_LIBRARIES} PRIVATE ${IPOPT_LIBRARIES} ${CMAKE_DL_LIBS})
+ament_target_dependencies(${PROJECT_NAME} PUBLIC paraminf)
 
-#############
-## Install ##
-#############
-
-
-## Mark executables and/or libraries for installation
-install(TARGETS ${PROJECT_NAME}
-  ARCHIVE DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  LIBRARY DESTINATION ${CATKIN_PACKAGE_LIB_DESTINATION}
-  RUNTIME DESTINATION ${CATKIN_PACKAGE_BIN_DESTINATION}
-)
-
-## Mark cpp header files for installation
-install(DIRECTORY include/${PROJECT_NAME}/
-  DESTINATION ${CATKIN_PACKAGE_INCLUDE_DESTINATION}
-  FILES_MATCHING PATTERN "*.h"
-)
-
+target_include_directories(${PROJECT_NAME}
+  PUBLIC
+    "$<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>"
+    "$<INSTALL_INTERFACE:include>"
+    ${EIGEN3_INCLUDE_DIR}
+    ${autojac_INCLUDE_DIRS}
+  PRIVATE
+    ${IPOPT_INCLUDE_DIRS}
+  )
 
 #############
 ## Testing ##
@@ -186,7 +169,8 @@ add_gtest_compile(INCLUDE_PATH test/include)
 #####################
 ## Demo Executable ##
 #####################
-if(NOT BUILD_TEST AND NOT CATKIN_ENABLE_TESTING)
+
+if(NOT BUILD_TEST AND NOT BUILD_TESTING)
   # define variable SOURCE_DIR if not allready defined by add_gtest_compile
   # The variable is used to find the config file for the demo application relative to the projects parent directory 
   add_definitions(-DSOURCE_DIR=\"${CMAKE_CURRENT_SOURCE_DIR}\")
@@ -194,13 +178,43 @@ if(NOT BUILD_TEST AND NOT CATKIN_ENABLE_TESTING)
 endif()
 
 add_executable(run-demo example/src/demo_application.cpp ${TEST_CLASSES_SOURCES} ${TEST_CLASSES_HEADERS})
-target_include_directories(run-demo SYSTEM PUBLIC test/include)
+target_include_directories(run-demo PRIVATE SYSTEM test/include)
 set_target_properties(run-demo PROPERTIES LINKER_LANGUAGE CXX)
-add_dependencies(run-demo ${catkin_EXPORTED_TARGETS})
-target_link_libraries(run-demo ${PROJECT_NAME} ${catkin_LIBRARIES})
+target_link_libraries(run-demo ${PROJECT_NAME})
+
+#############
+## Install ##
+#############
+
+install(
+  DIRECTORY include/
+  DESTINATION include
+)
+
+install(
+  TARGETS ${PROJECT_NAME}
+  EXPORT export_${PROJECT_NAME}
+  ARCHIVE DESTINATION lib
+  LIBRARY DESTINATION lib
+  RUNTIME DESTINATION bin
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+install(
+  TARGETS run-demo
+  RUNTIME DESTINATION bin
+  DESTINATION lib/${PROJECT_NAME}
+)
+
+ament_export_targets(export_${PROJECT_NAME} HAS_LIBRARY_TARGET)
+ament_export_libraries(${PROJECT_NAME})
+ament_export_include_directories(include)
+ament_export_dependencies(paraminf autojac Eigen3)
 
 ##########
 ## DOCS ##
 ##########
 
 add_doxygen_compile()
+
+ament_package()
