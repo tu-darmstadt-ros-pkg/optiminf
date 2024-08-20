@@ -1,0 +1,25 @@
+<?xml version="1.0"?>
+<package format="2">
+  <name>optiminf</name>
+  <version>0.9.0</version>
+  <description>The optiminf package</description>
+
+  <maintainer email="biemueller@sim.tu-darmstadt.de">Felix Biemüller</maintainer>
+  <maintainer email="gutte@sim.tu-darmstadt.de">Alexander Gutte</maintainer>
+
+  <license>MIT</license>
+
+  <author email="biemueller@sim.tu-darmstadt.de">Felix Biemüller</author>
+  <author email="gutte@sim.tu-darmstadt.de">Alexander Gutte</author>
+
+
+  <buildtool_depend>catkin</buildtool_depend>
+
+  <depend>paraminf</depend>
+  <depend>autojac</depend>
+  
+  <test_depend>gtest</test_depend>
+
+  <doc_depend>doxygen</doc_depend>
+
+</package>

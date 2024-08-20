@@ -1,0 +1,11 @@
+problem:
+    code_generation_file_path: "test/output"
+solver:
+    use_dummy_solver: false
+    result_tolerance: 0.001
+    linear_solver: "mumps"
+    nlp_scaling_method: "gradient-based"
+    runtime_print_level: 0
+    runtime_timing_statistics: false
+    maximum_iterations: 10
+    use_hessian_approximation: "limited-memory"

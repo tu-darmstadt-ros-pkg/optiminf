@@ -1,0 +1,77 @@
+/** \mainpage Documentation
+
+	\tableofcontents
+
+    \section sec1 Basic Concepts
+    
+    \subsection sec11 Setup and Preparation Procedure
+    
+    Some applications like model predictive control (MPC) require repeatedly solving similar optimization problems in a time efficient manner.
+    For this reason the framework splits instantiating the framwork and building the NLP in the setup and preparation phase.
+    The setup phase is performed once at the beginning in and performs the following tasks:
+     - instantiating the objects needed by the framework, e.g. costs, constraints 
+     - parsing the config file
+     - performing all memory allocations that are independent to the changes between subsequent NLP configurations
+     
+    The tasks that are dependent on the custom NLP should be implemented in child classes of optiminf::SetupManagerBase, optiminf::CalculationCacheManagerBase, optiminf::CostBase and optiminf::ConstraintBase.
+   
+    In contrast the preparation phase is executed before solving every problem and responsible for performing all tasks that are dependent on the NLP configuration.
+    These tasks consist of e.g:
+     - resizing data structure if necessary
+     - providing initial values for the optimization variables
+     
+    For implementing these procedures use the child classes of optiminf::PreparationManagerBase or in the child classes of optiminf::CalculationCacheManagerBase, optiminf::CostBase and optiminf::ConstraintBase.
+    
+    \subsection sec12 Calculation Cache
+    To speed up the calculation of the costs, constraints and their derivatives the framework introduces the concept of a calculation chache. It is especially usefull if multiple costs or constraints require the calculation of the same values.
+    A common scenario for this is e.g. a spline for which values at certain points are used in constraints and costs. In these cases the values and the jacobian for them needs to be calculated just once and the results can be stored in the calculation cache.
+    The dependent costs and constraints can then access these values and only need to compute the jacobian for the function mapping from the calculation cache values to the cost or constraint values.
+    
+    The calculation cache is internally represented by a single EIGEN vector holding its values and a sparse EIGEN matrix representing the jacobian.
+    For maximum performance one needs to consider the order in which the values are stored in the vector to improve utilization of the CPU hardware caches during computation and usage of the calculation cache values.
+    
+    \subsection sec13 Using Internally and Externally calculated Jacobian Matrices
+    To improve efficiency the framework uses a sparse representation of the jacobian matrices.
+    In this context "internally" refers to a storage of the jacobian within the scope of this framework, i.e. in the optiominf:::CalculationResult contained in the child classes of optiminf::CalculationCacheManagerBase, optiminf::CostBase and optiminf::ConstraintBase.
+    This is usually the cases when the calculation of the jacobian is directly implemented whithin the calulation cache the costs or constraints.
+    
+    When using automatic differentiation e.g. using our autojac package or any other framework for calculating the jacobian one can avoid copying the values to the internal representation by rather providing an EIGEN base sparse matrix map using optiminf::CalculationResult::setExternalJacobianReference(). 
+    
+	\section sec2 Implementing a custom NLP
+	
+	The steps for implementing a custom NLP are the following:
+	
+    1. Implementing the PreparationManager
+    2. Implementing the calculations to be stored in the CalculationCache
+    3. Implementing the costs & constraints
+    4. Implementing an exporter     
+    5. Implementing the SetupManager
+    6. Implementing the API calls to the NlpManager
+    
+    \subsection sec21 Using Automatic Differentiation
+    To use automatic differentiation have a look at our autojac package. Furthermore you can find examples for using autodiff in the implementation of optiminf::test::SimpleCalculationCache and optiminf::test::SimpleCost.
+    
+  \section sec3 Example Problem
+    
+    The following classes implement a simple optimization problem that is used for the run-demo executable:
+     - optiminf::test::SimpleCalculationCache
+     - optiminf::test::SimpleCcView 
+     - optiminf::test::SimpleConstraint
+     - optiminf::test::SimpleCost
+     - optiminf::test::SimpleExporter
+     - optiminf::test::SimplePreparationManager
+     - optiminf::test::UnitTestSetupManager
+     
+  \section sec4 Implementing additional solver interfaces
+  Additional solver interfaces can be added as a child class of optiminf::SolverInterfaceBase. The implementation of the IPOPT solver interface in optiminf::IpoptInterface and optiminf::test::DummySolverInterface can be used as an example.
+*/
+
+/**
+ * @namespace optiminf 
+ * @brief namespace of the optiminf package
+ */
+
+/**
+ * @namespace optiminf::test 
+ * @brief namespace of the unit tests for the optiminf package
+ */

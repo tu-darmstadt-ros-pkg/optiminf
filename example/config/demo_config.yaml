@@ -1,0 +1,24 @@
+problem:
+    code_generation_file_path: "example/output"
+solver:
+    use_dummy_solver: false
+    result_tolerance: 0.001
+    linear_solver: "mumps"
+    nlp_scaling_method: "gradient-based"
+    runtime_print_level: 5
+    runtime_timing_statistics: true
+    maximum_iterations: 30
+    use_hessian_approximation: "limited-memory"
+    output_file_path: "example/output/ipopt_demo_output.txt"
+    acceptable_constraint_violation: 0.0  # if the solver reaches the time or iteration limit or an acceptable failure occurs and the constraint violation is below or equal to this value the solution get a positive solver result status. Set to a negative vale if only optimal solutions should be accepted, set to zero if no contraint violations are tolerated, but reaching the iteration limit is.  
+    acceptable_solver_failures: []        # Negative Solver status codes that should be accpeted if the constraint violation is below acceptable_constraint_violation. If the fist entry is zero any error will be accepted in this case. Reaching the iteration or time limit doe not need to be specified here. 
+debug:
+    check_for_non_finite_values: false    # checks for non finite values in optimization variables, the calculation cache values and jacobian, the constraint values, jacobian and bounds and the cost values and gradients
+    constraint_debug_level: 4             # 0: none
+                                          # 1: print number of constraint violations at end of optimization
+                                          # 2: all of level 1 and call detailed debug print function at end of the optimization
+                                          # 3: all of level 2 and print number of constraint violations after each iteration
+                                          # 4: all of level 3 and call detailed debug print function after each iteration
+    cost_debug_level: 2                   # 0: none
+                                          # 1: print final values for each cost at end of optimization
+                                          # 2: all of level 1 and print values for each cost after each iteration
