@@ -1,6 +1,6 @@
 #  Optiminf
 ## General
-This package is designed for implementing and efficiently solving of non-linear programs (NLP) with constraints.
+This package is designed for implementing and efficiently solving non-linear programs (NLP) with constraints.
 
 The framework uses [Eigen](https://eigen.tuxfamily.org/) for representing vectors and matrices and the Open Source interior point solver [IPOPT](https://github.com/coin-or/Ipopt).
 It can be combined with the capabilities of our autojac package to enable automatic differentiation and code generation for calculating the jacobian matrices utilizing [CppAD](https://github.com/coin-or/CppAD) and [CppADCodeGen](https://github.com/joaoleal/CppADCodeGen). 
@@ -13,8 +13,8 @@ This has proven especially useful for model predictive control applications.
 - generic solver interface for integrating more solvers
 - compatible with our [autojac](https://github.com/tu-darmstadt-ros-pkg/autojac) package for automatic differentiation
 - integration of our parameter interface [paraminf](https://github.com/tu-darmstadt-ros-pkg/paraminf) for simple YAML-file based configuration avoiding the need for recompilation
-- modular design enables to easily activate and deactive costs & constraints 
-- implementation of hermite splines
+- the modular design enables to easily activate and deactive costs & constraints 
+- implementation of cubic Hermite splines
 - designed for efficiency
   - utilization of sparse matrices
   - calculations used by multiple costs or constraints can be cached
